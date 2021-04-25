@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richard.book.domain.Book;
 import com.richard.book.service.BookService;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,20 +48,55 @@ public class BookControllerUnitTest {
         Book book = Book.builder().title("스프링 따라하기").author("코스").build();
         String content = new ObjectMapper().writeValueAsString(book);
         // when (실행된 다는 가정하에) then( 어떤값이 나올 것이다 정의)
-        when(bookService.저장하기(book)).thenReturn( Book.builder().id(1000L).title("스프링 따라하기").author("코스").build());
+        when(bookService.저장하기(book)).thenReturn( Book.builder().id(1L).title("스프링 따라하기").author("코스").build());
 
         // when(테스트 실행)
         ResultActions resultActions = mockMvc.perform(post("/book")
                                                 .contentType(MediaType.APPLICATION_JSON_UTF8) // contentType: 던지는 데이터 타입이 무엇이냐?
                                                 .content(content)
                                                 .accept(MediaType.APPLICATION_JSON_UTF8)); //accept: 응답객체가 무엇이냐?
-
         // then(검증)
         resultActions
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("스프링 따라하기"))
                 .andDo(MockMvcResultHandlers.print());
+    }
+    @Test
+    public void findAll_테스트() throws Exception {
+        //given
+        List<Book> books = new ArrayList<>();
+        books.add(Book.builder().id(1L).title("스프링부트 따라하기").author("코스").build());
+        books.add(Book.builder().id(2L).title("리엑트 따라하기").author("코스").build());
+        when(bookService.모두가져오기()).thenReturn(books);
 
+        //when
+        ResultActions resultActions = mockMvc.perform(get("/book")
+        .accept(MediaType.APPLICATION_JSON_UTF8));
+
+        //then
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", Matchers.hasSize(2)))
+                .andExpect(jsonPath("$.[0].title").value("스프링부트 따라하기"))
+                .andDo(MockMvcResultHandlers.print());
+
+    }
+
+    @Test
+    public void findById_테스트() throws  Exception {
+        //given
+        Long id = 1L;
+        when(bookService.한건가져오기(id)).thenReturn(Book.builder().id(1L).title("자바 공부하기").author("ssar").build());
+
+        //when
+        ResultActions resultActions = mockMvc.perform(get("/book/{id}",id)
+            .accept(MediaType.APPLICATION_JSON_UTF8));
+
+        //then
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("자바 공부하기"))
+                .andDo(MockMvcResultHandlers.print());
 
     }
 

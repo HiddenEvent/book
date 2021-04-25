@@ -1,6 +1,9 @@
 package com.richard.book.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richard.book.domain.Book;
+import com.richard.book.domain.BookRepository;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -11,7 +14,12 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,6 +40,17 @@ public class BookControllerIntegreTest {
 
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private BookRepository bookRepository;
+
+    @Autowired
+    private EntityManager entityManager;
+
+    @BeforeEach // 하나의 테스트가 끝날때 마다 액션.
+    public void init() { // AUTO_INCREMENT 1로 초기화 
+//        entityManager.createNativeQuery("ALTER TABLE book AUTO_INCREMENT=1").executeUpdate();  // mysql용
+        entityManager.createNativeQuery("ALTER TABLE book ALTER COLUMN id RESTART WITH 1").executeUpdate();
+    }
 
     // BDDMockito 패턴 => given, when, then 으로 구성되어 있음
     @Test
@@ -51,7 +70,27 @@ public class BookControllerIntegreTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("스프링 따라하기"))
                 .andDo(MockMvcResultHandlers.print());
+    }
 
+    @Test
+    public void findAll_테스트() throws Exception {
+        //given
+        List<Book> books = new ArrayList<>();
+        books.add(Book.builder().title("스프링부트 따라하기").author("코스").build());
+        books.add(Book.builder().title("리엑트 따라하기").author("코스").build());
+        books.add(Book.builder().title("Junit 따라하기").author("코스").build());
+        bookRepository.saveAll(books);
+
+        //when
+        ResultActions resultActions = mockMvc.perform(get("/book")
+                .accept(MediaType.APPLICATION_JSON_UTF8));
+
+        //then
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", Matchers.hasSize(3)))
+                .andExpect(jsonPath("$.[0].title").value("스프링부트 따라하기"))
+                .andDo(MockMvcResultHandlers.print());
 
     }
 }
