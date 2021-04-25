@@ -43,13 +43,13 @@ public class BookControllerUnitTest {
         Book book = Book.builder().title("스프링 따라하기").author("코스").build();
         String content = new ObjectMapper().writeValueAsString(book);
         // when (실행된 다는 가정하에) then( 어떤값이 나올 것이다 정의)
-        when(bookService.저장하기(book)).thenReturn( Book.builder().id(1L).title("스프링 따라하기").author("코스").build());
+        when(bookService.저장하기(book)).thenReturn( Book.builder().id(1000L).title("스프링 따라하기").author("코스").build());
 
         // when(테스트 실행)
         ResultActions resultActions = mockMvc.perform(post("/book")
-        .contentType(MediaType.APPLICATION_JSON) // contentType: 던지는 데이터 타입이 무엇이냐?
-        .content(content)
-        .accept(MediaType.APPLICATION_JSON)); //accept: 응답객체가 무엇이냐?
+                                                .contentType(MediaType.APPLICATION_JSON_UTF8) // contentType: 던지는 데이터 타입이 무엇이냐?
+                                                .content(content)
+                                                .accept(MediaType.APPLICATION_JSON_UTF8)); //accept: 응답객체가 무엇이냐?
 
         // then(검증)
         resultActions
