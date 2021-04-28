@@ -3,6 +3,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richard.book.domain.Book;
 import com.richard.book.domain.BookRepository;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,10 @@ public class BookControllerIntegreTest {
 //        entityManager.createNativeQuery("ALTER TABLE book AUTO_INCREMENT=1").executeUpdate();  // mysql용
         entityManager.createNativeQuery("ALTER TABLE book ALTER COLUMN id RESTART WITH 1").executeUpdate();
     }
+    @AfterEach
+    public void end() {
+//        bookRepository.deleteAll();
+    }
 
     // BDDMockito 패턴 => given, when, then 으로 구성되어 있음
     @Test
@@ -91,4 +96,56 @@ public class BookControllerIntegreTest {
                 .andDo(MockMvcResultHandlers.print());
 
     }
+    @Test
+    public void findById_테스트() throws  Exception {
+        //given
+        Long id = 2L;
+        List<Book> books = new ArrayList<>();
+        books.add(Book.builder().title("스프링부트 따라하기").author("코스").build());
+        books.add(Book.builder().title("리엑트 따라하기").author("코스").build());
+        books.add(Book.builder().title("Junit 따라하기").author("코스").build());
+        bookRepository.saveAll(books);
+
+
+        //when
+        ResultActions resultActions = mockMvc.perform(get("/book/{id}",id)
+                .accept(MediaType.APPLICATION_JSON_UTF8));
+
+        //then
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("리엑트 따라하기"))
+                .andDo(MockMvcResultHandlers.print());
+
+    }
+
+    @Test
+    public void update_테스트() throws  Exception {
+        //given
+        Long id = 1L;
+        List<Book> books = new ArrayList<>();
+        books.add(Book.builder().title("스프링부트 따라하기").author("코스").build());
+        books.add(Book.builder().title("리엑트 따라하기").author("코스").build());
+        books.add(Book.builder().title("Junit 따라하기").author("코스").build());
+        bookRepository.saveAll(books);
+
+        Book book = Book.builder().title("C++ 따라하기").author("코스").build();
+        String content = new ObjectMapper().writeValueAsString(book);
+
+        //when
+        ResultActions resultActions = mockMvc.perform(put("/book/{id}",id)
+                .contentType(MediaType.APPLICATION_JSON_UTF8) // contentType: 던지는 데이터 타입이 무엇이냐?
+                .content(content)
+                .accept(MediaType.APPLICATION_JSON_UTF8)); //accept: 응답객체가 무엇이냐?
+
+        //then
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.title").value("C++ 따라하기"))
+                .andDo(MockMvcResultHandlers.print());
+
+    }
+
+
 }
