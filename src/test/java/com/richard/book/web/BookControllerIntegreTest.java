@@ -19,10 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 /**
@@ -47,7 +45,7 @@ public class BookControllerIntegreTest {
     private EntityManager entityManager;
 
     @BeforeEach // 하나의 테스트가 끝날때 마다 액션.
-    public void init() { // AUTO_INCREMENT 1로 초기화 
+    public void init() { // AUTO_INCREMENT 1로 초기화
 //        entityManager.createNativeQuery("ALTER TABLE book AUTO_INCREMENT=1").executeUpdate();  // mysql용
         entityManager.createNativeQuery("ALTER TABLE book ALTER COLUMN id RESTART WITH 1").executeUpdate();
     }

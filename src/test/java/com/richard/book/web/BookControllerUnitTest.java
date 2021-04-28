@@ -20,16 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 // 단위 테스트( Controller 관련 로직만 띄우기) - Controller, Filter, ControllerAdvice
 
 // @ExtendWith(SpringExtension.class) jUnit5를 사용하기 때문에 Spring으로 확장시키는 어노테이션을 따로 설정하지 않아도 된다.
-
 
 @WebMvcTest // Controller, Filter, ControllerAdvice 만 메모리에 띄운다 /Spring으로 확장시키는 어노테이션들고 있다.
 public class BookControllerUnitTest {
@@ -38,7 +35,7 @@ public class BookControllerUnitTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean // Ioc환경에 bean 등록됨 => 가짜 null임...
+    @MockBean // Ioc환경에 bean 등록됨 => 가짜... null임...
     private BookService bookService;
     
     // BDDMockito 패턴 => given, when, then 으로 구성되어 있음
@@ -96,6 +93,29 @@ public class BookControllerUnitTest {
         resultActions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("자바 공부하기"))
+                .andDo(MockMvcResultHandlers.print());
+
+    }
+
+    @Test
+    public void update_테스트() throws  Exception {
+        //given
+        Long id = 1L;
+        Book book = Book.builder().title("C++ 따라하기").author("코스").build();
+        String content = new ObjectMapper().writeValueAsString(book);
+        // when (실행된 다는 가정하에) then( 어떤값이 나올 것이다 정의)
+        when(bookService.수정하기(id, book)).thenReturn( Book.builder().id(id).title("C++ 따라하기").author("코스").build());
+
+        //when
+        ResultActions resultActions = mockMvc.perform(put("/book/{id}",id)
+                .contentType(MediaType.APPLICATION_JSON_UTF8) // contentType: 던지는 데이터 타입이 무엇이냐?
+                .content(content)
+                .accept(MediaType.APPLICATION_JSON_UTF8)); //accept: 응답객체가 무엇이냐?
+
+        //then
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("C++ 따라하기"))
                 .andDo(MockMvcResultHandlers.print());
 
     }
