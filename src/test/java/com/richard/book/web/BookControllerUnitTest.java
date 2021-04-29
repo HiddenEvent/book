@@ -13,12 +13,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -118,6 +121,25 @@ public class BookControllerUnitTest {
                 .andExpect(jsonPath("$.title").value("C++ 따라하기"))
                 .andDo(MockMvcResultHandlers.print());
 
+    }
+    @Test
+    public void delete_테스트() throws  Exception {
+        //given
+        Long id = 1L;
+        // when (실행된 다는 가정하에) then( 어떤값이 나올 것이다 정의)
+        when(bookService.삭제하기(id)).thenReturn("ok");
+
+        //when
+        ResultActions resultActions = mockMvc.perform(delete("/book/{id}",id)
+                .accept(MediaType.TEXT_PLAIN)); //accept: 응답객체가 무엇이냐?
+
+        //then
+        resultActions
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print());
+        MvcResult requestResult = resultActions.andReturn();
+        String result = requestResult.getResponse().getContentAsString();
+        assertEquals("ok",result);
     }
 
 }
