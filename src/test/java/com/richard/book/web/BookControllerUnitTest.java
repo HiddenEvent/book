@@ -2,6 +2,7 @@ package com.richard.book.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.richard.book.common.BoardType;
 import com.richard.book.domain.Book;
 import com.richard.book.service.BookService;
 import org.hamcrest.Matchers;
@@ -140,6 +141,11 @@ public class BookControllerUnitTest {
         MvcResult requestResult = resultActions.andReturn();
         String result = requestResult.getResponse().getContentAsString();
         assertEquals("ok",result);
+    }
+    @Test
+    public void 기타_테스트() {
+        BoardType.values();
+        log.info("Enum 타입 ===============> {}", BoardType.valueOf("NOTICE").ordinal());
     }
 
 }
